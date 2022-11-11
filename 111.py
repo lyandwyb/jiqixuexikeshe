@@ -5,6 +5,9 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import roc_auc_score, f1_score, recall_score, precision_score
 from sklearn.model_selection import StratifiedKFold
+from sklearn.experimental import enable_hist_gradient_boosting
+from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.ensemble import HistGradientBoostingClassifier
 
 warnings.filterwarnings('ignore')
 
@@ -41,7 +44,9 @@ for i in range(len(com_f)):
 
 # 训练测试分离
 train = data[~data['label'].isna()].reset_index(drop=True)
+train = train[:50000]
 test = data[data['label'].isna()].reset_index(drop=True)
+test = test[:50000]
 
 #数据处理，五折交叉验证
 #为了防止数据不均匀，提高模型的精确度，减轻过拟合
@@ -94,7 +99,7 @@ for fold_, (trn_idx, val_idx) in enumerate(KF.split(train.values, y.values)):
     feat_imp_df['imp'] += clf.feature_importance() / 5
 
 print("AUC score: {}".format(roc_auc_score(y, oof_lgb)))
-print("F1 score: {}".format(f1_score(y, [1 if i >= 0.5 else 0 for i in oof_lgb])))#分类模型评估 2/F1=1/P+1/F
+print("F1 score: {}".format(f1_score(y, [1 if i >= 0.5 else 0 for i in oof_lgb])))#分类模型评估2/F1=1/R+1/P
 print("Precision score: {}".format(precision_score(y, [1 if i >= 0.5 else 0 for i in oof_lgb])))#精确率 真正正确的占所有预测为正的比例。TP/(TP+FP)
 print("Recall score: {}".format(recall_score(y, [1 if i >= 0.5 else 0 for i in oof_lgb])))#召回率 真正正确的占所有实际为正的比例。TP/(TP+FN)
 
